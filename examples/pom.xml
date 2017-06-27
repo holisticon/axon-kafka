@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>axon-kafka-parent</artifactId>
+    <groupId>org.axonframework</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>axon-kafka-examples-parent</artifactId>
+  <name>Axon Framework Kafka Examples</name>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+
+  <properties>
+    <swagger-version>2.6.1</swagger-version>
+  </properties>
+
+  <modules>
+    <module>axon-kafka-common</module>
+    <module>axon-kafka-sender</module>
+    <module>axon-kafka-receiver</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+        <version>${springboot.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.axonframework</groupId>
+        <artifactId>axon-spring-boot-starter</artifactId>
+        <version>${axon.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.axonframework</groupId>
+        <artifactId>axon-spring</artifactId>
+        <version>${axon.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger2</artifactId>
+        <version>${swagger-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger-ui</artifactId>
+        <version>${swagger-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.axonframework</groupId>
+        <artifactId>axon-kafka-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${springboot.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+</project>

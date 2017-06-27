@@ -1,0 +1,4 @@
+kafka:
+  bootstrap-servers: localhost:9092
+  event-topic: events
+  group: events
