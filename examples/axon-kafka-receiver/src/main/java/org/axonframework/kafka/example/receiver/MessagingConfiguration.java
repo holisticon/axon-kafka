@@ -7,6 +7,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.axonframework.kafka.example.receiver.messaging.Receiver;
+import org.axonframework.serialization.Serializer;
+import org.axonframework.serialization.json.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,7 +54,13 @@ public class MessagingConfiguration {
   }
 
   @Bean
-  public Receiver receiver() {
-    return new Receiver();
+  public Receiver receiver(Serializer serializer) {
+    return new Receiver(serializer);
   }
+  
+  @Bean
+  public Serializer serializer() {
+    return new JacksonSerializer();
+  }
+
 }

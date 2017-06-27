@@ -18,37 +18,37 @@ import org.springframework.kafka.core.ProducerFactory;
 @Configuration
 public class MessagingConfiguration {
 
-    // list of host:port pairs used for establishing the initial connections to
-    // the Kakfa cluster
-    @Value("${kafka.bootstrap-servers}")
-    private String bootstrapServers;
+  // list of host:port pairs used for establishing the initial connections to
+  // the Kakfa cluster
+  @Value("${kafka.bootstrap-servers}")
+  private String bootstrapServers;
 
-    @Value("${kafka.event-topic}")
-    private String eventTopic;
+  @Value("${kafka.event-topic}")
+  private String eventTopic;
 
-    @Bean
-    public Map<String, Object> producerConfigs() {
-	Map<String, Object> props = new HashMap<>();
-	props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-	props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-	props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+  @Bean
+  public Map<String, Object> producerConfigs() {
+    Map<String, Object> props = new HashMap<>();
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
 
-	return props;
-    }
+    return props;
+  }
 
-    @Bean
-    public ProducerFactory<String, byte[]> producerFactory() {
-	return new DefaultKafkaProducerFactory<>(producerConfigs());
-    }
+  @Bean
+  public ProducerFactory<String, byte[]> producerFactory() {
+    return new DefaultKafkaProducerFactory<>(producerConfigs());
+  }
 
-    @Bean
-    public KafkaTemplate<String, byte[]> kafkaTemplate() {
-	return new KafkaTemplate<>(producerFactory());
-    }
+  @Bean
+  public KafkaTemplate<String, byte[]> kafkaTemplate() {
+    return new KafkaTemplate<>(producerFactory());
+  }
 
-    @Bean
-    public Sender sender(KafkaTemplate<String, byte[]> template) {
-	return new KafkaFakeSender(this.eventTopic);
-	// return new KafkaSender(this.eventTopic, template);
-    }
+  @Bean
+  public Sender sender(KafkaTemplate<String, byte[]> template) {
+    return new KafkaFakeSender(this.eventTopic);
+    // return new KafkaSender(this.eventTopic, template);
+  }
 }

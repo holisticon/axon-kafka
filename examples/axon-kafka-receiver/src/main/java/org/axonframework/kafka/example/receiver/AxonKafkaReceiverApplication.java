@@ -9,5 +9,4 @@ public class AxonKafkaReceiverApplication {
   public static void main(String[] args) {
     SpringApplication.run(AxonKafkaReceiverApplication.class, args);
   }
-
 }
