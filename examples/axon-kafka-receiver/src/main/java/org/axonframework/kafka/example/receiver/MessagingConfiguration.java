@@ -7,16 +7,18 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.axonframework.kafka.example.receiver.messaging.Receiver;
+import org.axonframework.kafka.example.receiver.messaging.SubscribabaleSource;
 import org.axonframework.serialization.Serializer;
-import org.axonframework.serialization.json.JacksonSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 
 @Configuration
+@EnableKafka
 public class MessagingConfiguration {
 
   // list of host:port pairs used for establishing the initial connections to
@@ -54,13 +56,8 @@ public class MessagingConfiguration {
   }
 
   @Bean
-  public Receiver receiver(Serializer serializer) {
-    return new Receiver(serializer);
-  }
-  
-  @Bean
-  public Serializer serializer() {
-    return new JacksonSerializer();
+  public Receiver receiver(Serializer serializer, SubscribabaleSource source) {
+    return new Receiver(serializer, source);
   }
 
 }

@@ -3,7 +3,9 @@ package org.axonframework.kafka.example.receiver.query;
 import org.axonframework.config.EventHandlingConfiguration;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
-import org.axonframework.kafka.example.receiver.messaging.Receiver;
+import org.axonframework.kafka.example.receiver.messaging.SubscribabaleSource;
+import org.axonframework.serialization.Serializer;
+import org.axonframework.serialization.json.JacksonSerializer;
 import org.axonframework.spring.config.EnableAxon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +21,13 @@ public class AxonConfiguration {
   }
 
   @Autowired
-  public void initKafkaReceiver(EventHandlingConfiguration config, Receiver receiver) {
-    config.registerSubscribingEventProcessor(NotificationLoggingListener.class.getPackage().getName(), c -> receiver);
+  public void initKafkaReceiver(EventHandlingConfiguration config, SubscribabaleSource source) {
+    config.registerSubscribingEventProcessor(NotificationLoggingListener.class.getPackage().getName(), c -> source);
   }
+
+  @Bean
+  public Serializer serializer() {
+    return new JacksonSerializer();
+  }
+
 }
