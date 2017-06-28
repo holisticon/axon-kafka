@@ -11,7 +11,7 @@
 
   <properties>
     <springboot.version>1.5.4.RELEASE</springboot.version>
-    <kafka.version>0.11.0</kafka.version>
+    <kafka.version>0.10.2.1</kafka.version>
     <axon.version>3.0.5</axon.version>
   </properties>
 
@@ -27,6 +27,12 @@
         <artifactId>axon-core</artifactId>
         <version>${axon.version}</version>
       </dependency>
+			<dependency>
+			  <groupId>org.apache.kafka</groupId>
+			  <artifactId>kafka-clients</artifactId>
+			  <version>${kafka.version}</version>
+			</dependency>
+      
       <dependency>
         <groupId>org.axonframework</groupId>
         <artifactId>axon-kafka</artifactId>

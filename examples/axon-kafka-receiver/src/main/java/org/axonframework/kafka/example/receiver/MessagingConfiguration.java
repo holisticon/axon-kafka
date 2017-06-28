@@ -1,14 +1,10 @@
 package org.axonframework.kafka.example.receiver;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.axonframework.kafka.example.receiver.messaging.Receiver;
-import org.axonframework.kafka.example.receiver.messaging.SubscribabaleSource;
-import org.axonframework.serialization.Serializer;
+import org.axonframework.kafka.config.KafkaConfigBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +17,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 @EnableKafka
 public class MessagingConfiguration {
 
-  // list of host:port pairs used for establishing the initial connections to
-  // the Kakfa cluster
   @Value("${kafka.bootstrap-servers}")
   private String bootstrapServers;
 
@@ -31,16 +25,9 @@ public class MessagingConfiguration {
 
   @Bean
   public Map<String, Object> consumerConfigs() {
-    Map<String, Object> props = new HashMap<>();
-    // list of host:port pairs used for establishing the initial connections to
-    // the Kakfa cluster
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
-    // allows a pool of processes to divide the work of consuming and processing
-    // records
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
-    return props;
+    return KafkaConfigBuilder.defaultConsumer().bootstrapServers(bootstrapServers)
+        .withKeyDeserializer(StringDeserializer.class).withValueDeserializer(ByteArrayDeserializer.class).group(group)
+        .asMap();
   }
 
   @Bean
@@ -53,11 +40,6 @@ public class MessagingConfiguration {
     final ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
     return factory;
-  }
-
-  @Bean
-  public Receiver receiver(Serializer serializer, SubscribabaleSource source) {
-    return new Receiver(serializer, source);
   }
 
 }

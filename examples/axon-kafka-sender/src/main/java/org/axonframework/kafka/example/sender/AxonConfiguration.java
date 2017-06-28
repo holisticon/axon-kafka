@@ -6,7 +6,7 @@ import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageE
 import org.axonframework.kafka.Sender;
 import org.axonframework.kafka.message.KafkaMessageConverter;
 import org.axonframework.serialization.Serializer;
-import org.axonframework.serialization.json.JacksonSerializer;
+import org.axonframework.serialization.xml.XStreamSerializer;
 import org.axonframework.spring.config.EnableAxon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +32,6 @@ public class AxonConfiguration {
 
   @Bean
   public Serializer serializer() {
-    return new JacksonSerializer();
+    return new XStreamSerializer();
   }
 }
