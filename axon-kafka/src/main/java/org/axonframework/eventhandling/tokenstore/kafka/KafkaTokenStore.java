@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class KafkaTokenStore implements TokenStore {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTokenStore.class);
+    private static final Logger log = LoggerFactory.getLogger(KafkaTokenStore.class);
     private final KafkaConsumer<?, ?> consumer;
     private TopicPartition topicPartition;
 
@@ -32,7 +32,7 @@ public class KafkaTokenStore implements TokenStore {
      * @param consumer
      *            initialized Kafka Consumer.
      * @param topic
-     *            Kafka Topic to calculate offset on.
+     *            Kafka Topic to calculate offset on (should be the domain event topic).
      */
     public KafkaTokenStore(final KafkaConsumer<?, ?> consumer, final String topic) {
         this.consumer = consumer;
@@ -42,21 +42,27 @@ public class KafkaTokenStore implements TokenStore {
     }
 
     @Override
-    public TrackingToken fetchToken(String processorName, int segment) throws UnableToClaimTokenException {
-        LOGGER.info("Fetch token {}, {}", processorName, segment);
+    public TrackingToken fetchToken(final String processorName, final int segment) throws UnableToClaimTokenException {
+
+        // segment is currently only 0 = root, but will be eventually used for partitioning/parallelization
+        
+        log.info("Fetch token {}, {}", processorName, segment);
         Optional<Long> offset = Optional.empty();
         try {
             offset = Optional.of(consumer.endOffsets(Arrays.asList(this.topicPartition)).get(this.topicPartition));
         } catch (Exception e) {
-            LOGGER.error("Error claiming token", e);
+            log.error("Error claiming token", e);
             throw new UnableToClaimTokenException("Error claiming a token for processor " + processorName);
         }
         return new GlobalSequenceTrackingToken(offset.orElse(Long.valueOf(0)).longValue());
     }
 
     @Override
-    public void storeToken(final TrackingToken token, String processorName, int segment) throws UnableToClaimTokenException {
-        LOGGER.info("Store token {} {}, {}", token, processorName, segment);
+    public void storeToken(final TrackingToken token, final String processorName, final int segment) throws UnableToClaimTokenException {
+        
+     // segment is currently only 0 = root, but will be eventually used for partitioning/parallelization
+        
+        log.info("Store token {} {}, {}", token, processorName, segment);
         Assert.isTrue(token == null || token instanceof GlobalSequenceTrackingToken,
                 () -> String.format("Token [%s] is of the wrong type. Expected [%s]", token, GlobalSequenceTrackingToken.class.getSimpleName()));
 
@@ -64,14 +70,14 @@ public class KafkaTokenStore implements TokenStore {
         try {
             consumer.seek(topicPartition, offset);
         } catch (Exception e) {
-            LOGGER.error("Error claiming token", e);
+            log.error("Error claiming token", e);
             throw new UnableToClaimTokenException("Error claiming a token for processor " + processorName);
         }
     }
 
     @Override
     public void releaseClaim(String processorName, int segment) {
-        LOGGER.info("Release claim {}, {}", processorName, segment);
+        log.info("Release claim {}, {}", processorName, segment);
     }
 
 }
