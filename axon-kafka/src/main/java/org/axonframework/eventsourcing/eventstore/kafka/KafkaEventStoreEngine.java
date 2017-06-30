@@ -107,6 +107,11 @@ public class KafkaEventStoreEngine extends AbstractEventStorageEngine {
     }
 
 
+    private DomainEventData<?> createDomainEvent(ConsumerRecord<String, byte[]> record) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     @Override
     protected Stream<? extends TrackedEventData<?>> readEventData(TrackingToken trackingToken, boolean mayBlock) {
         LOGGER.info("readEventData {} {}", trackingToken, mayBlock);
@@ -119,6 +124,11 @@ public class KafkaEventStoreEngine extends AbstractEventStorageEngine {
         return StreamSupport.stream(consumer.poll(TIMEOUT).records(this.eventStorage).spliterator(), false).map(record -> createTrackedEvent(record));        
     }
 
+
+    private TrackedEventData<?> createTrackedEvent(ConsumerRecord<String, byte[]> record) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     @Override
     protected Optional<? extends DomainEventData<?>> readSnapshotData(String aggregateIdentifier) {
