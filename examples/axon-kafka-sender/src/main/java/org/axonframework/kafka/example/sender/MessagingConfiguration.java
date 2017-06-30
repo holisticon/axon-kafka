@@ -6,6 +6,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import lombok.ToString;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -18,6 +19,7 @@ import org.axonframework.config.kafka.KafkaConfigBuilder;
 import org.axonframework.eventhandling.tokenstore.TokenStore;
 import org.axonframework.eventhandling.tokenstore.kafka.KafkaTokenStore;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
+import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.kafka.KafkaEventStoreEngine;
 import org.axonframework.messaging.kafka.Sender;
 import org.axonframework.messaging.kafka.message.KafkaMessage;
@@ -28,8 +30,11 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.PostConstruct;
+
 @Configuration
 @Slf4j
+@ToString
 public class MessagingConfiguration {
 
     @Value("${kafka.bootstrap-servers}")
@@ -43,6 +48,11 @@ public class MessagingConfiguration {
 
     @Value("${kafka.timeout:1000}")
     private Long timeout;
+
+    @PostConstruct
+    void log() {
+        log.info(this.toString());
+    }
 
     @Bean
     public Properties producerConfigs() {
@@ -58,16 +68,17 @@ public class MessagingConfiguration {
     
     @Bean
     public EventStorageEngine engine(Serializer serializer) {
-        return new KafkaEventStoreEngine(serializer, null, null, eventStorageTopic, bootstrapServers);
+        //return new KafkaEventStoreEngine(serializer, null, null, eventStorageTopic, bootstrapServers);
+        return new InMemoryEventStorageEngine();
     }
 
-    @Bean
-    public TokenStore tokenStore() {
-        log.info("Configured token store");
-        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(consumerConfigs());
-        return new KafkaTokenStore(consumer, eventStorageTopic);
-    }
-    
+//    //@Bean
+//    public TokenStore tokenStore() {
+//        log.info("Configured token store");
+//        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(consumerConfigs());
+//        return new KafkaTokenStore(consumer, eventStorageTopic);
+//    }
+//
     @Bean
     public Sender sender() {
         return new Sender() {
