@@ -1,15 +1,15 @@
 package org.axonframework.eventhandling.tokenstore.kafka;
 
-import java.util.Comparator;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.axonframework.common.Assert;
 import org.axonframework.eventhandling.tokenstore.TokenStore;
 import org.axonframework.eventhandling.tokenstore.UnableToClaimTokenException;
-import org.axonframework.eventsourcing.eventstore.GapAwareTrackingToken;
 import org.axonframework.eventsourcing.eventstore.GlobalSequenceTrackingToken;
 import org.axonframework.eventsourcing.eventstore.TrackingToken;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class KafkaTokenStore implements TokenStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTokenStore.class);
     private final KafkaConsumer<?, ?> consumer;
-    private String topic;
+    private TopicPartition topicPartition;
 
     /**
      * Creates a Kafka based token store, which maps the token to position in Kafka.
@@ -35,8 +35,10 @@ public class KafkaTokenStore implements TokenStore {
      *            Kafka Topic to calculate offset on.
      */
     public KafkaTokenStore(final KafkaConsumer<?, ?> consumer, final String topic) {
-        this.topic = topic;
         this.consumer = consumer;
+        final List<PartitionInfo> consumerPartitions = this.consumer.partitionsFor(topic);
+        Assert.isTrue(consumerPartitions.size() != 0, () -> String.format("The topic %s has %d partitions, but exactly 1 is expected.", topic));
+        this.topicPartition = new TopicPartition(topic, consumerPartitions.get(0).partition());
     }
 
     @Override
@@ -44,10 +46,7 @@ public class KafkaTokenStore implements TokenStore {
         LOGGER.info("Fetch token {}, {}", processorName, segment);
         Optional<Long> offset = Optional.empty();
         try {
-            offset = consumer
-                    .endOffsets(
-                            consumer.partitionsFor(topic).stream().map(info -> new TopicPartition(info.topic(), info.partition())).collect(Collectors.toList()))
-                    .values().stream().collect(Collectors.maxBy(Comparator.naturalOrder()));
+            offset = Optional.of(consumer.endOffsets(Arrays.asList(this.topicPartition)).get(this.topicPartition));
         } catch (Exception e) {
             LOGGER.error("Error claiming token", e);
             throw new UnableToClaimTokenException("Error claiming a token for processor " + processorName);
@@ -63,8 +62,7 @@ public class KafkaTokenStore implements TokenStore {
 
         final long offset = ((GlobalSequenceTrackingToken) token).getGlobalIndex();
         try {
-            consumer.partitionsFor(topic).stream().map(info -> new TopicPartition(info.topic(), info.partition()))
-                    .forEach(partition -> consumer.seek(partition, offset));
+            consumer.seek(topicPartition, offset);
         } catch (Exception e) {
             LOGGER.error("Error claiming token", e);
             throw new UnableToClaimTokenException("Error claiming a token for processor " + processorName);

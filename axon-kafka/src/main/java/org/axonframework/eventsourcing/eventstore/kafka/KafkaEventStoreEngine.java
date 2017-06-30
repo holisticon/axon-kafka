@@ -22,11 +22,9 @@ import org.axonframework.common.Assert;
 import org.axonframework.common.jdbc.PersistenceExceptionResolver;
 import org.axonframework.config.kafka.KafkaConfigBuilder;
 import org.axonframework.eventhandling.EventMessage;
-import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventsourcing.DomainEventMessage;
 import org.axonframework.eventsourcing.eventstore.AbstractEventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.DomainEventData;
-import org.axonframework.eventsourcing.eventstore.GapAwareTrackingToken;
 import org.axonframework.eventsourcing.eventstore.GlobalSequenceTrackingToken;
 import org.axonframework.eventsourcing.eventstore.TrackedEventData;
 import org.axonframework.eventsourcing.eventstore.TrackingToken;
@@ -64,6 +62,7 @@ public class KafkaEventStoreEngine extends AbstractEventStorageEngine {
         final Properties consumerProps = KafkaConfigBuilder.defaultConsumer().withKeyDeserializer(StringDeserializer.class)
                 .withValueDeserializer(ByteArrayDeserializer.class).bootstrapServers(bootstrapServers).build();
         consumer = new KafkaConsumer<>(consumerProps);
+        consumer.subscribe(Arrays.asList(eventStorage));
 
         // setup producer
         final Properties producerProps = KafkaConfigBuilder.defaultProducer().withKeySerializer(StringSerializer.class)
@@ -106,7 +105,6 @@ public class KafkaEventStoreEngine extends AbstractEventStorageEngine {
         return StreamSupport.stream(consumer.poll(TIMEOUT).records(this.eventStorage).spliterator(), false).map(record -> createDomainEvent(record));
     }
 
-
     private DomainEventData<?> createDomainEvent(ConsumerRecord<String, byte[]> record) {
         // TODO Auto-generated method stub
         return null;
@@ -115,15 +113,14 @@ public class KafkaEventStoreEngine extends AbstractEventStorageEngine {
     @Override
     protected Stream<? extends TrackedEventData<?>> readEventData(TrackingToken trackingToken, boolean mayBlock) {
         LOGGER.info("readEventData {} {}", trackingToken, mayBlock);
-        
+
         Assert.isTrue(trackingToken == null || trackingToken instanceof GlobalSequenceTrackingToken,
                 () -> String.format("Token [%s] is of the wrong type. Expected [%s]", trackingToken, GlobalSequenceTrackingToken.class.getSimpleName()));
 
         final long offset = ((GlobalSequenceTrackingToken) trackingToken).getGlobalIndex();
         consumer.assignment().stream().forEach(partition -> consumer.seek(partition, offset));
-        return StreamSupport.stream(consumer.poll(TIMEOUT).records(this.eventStorage).spliterator(), false).map(record -> createTrackedEvent(record));        
+        return StreamSupport.stream(consumer.poll(TIMEOUT).records(this.eventStorage).spliterator(), false).map(record -> createTrackedEvent(record));
     }
-
 
     private TrackedEventData<?> createTrackedEvent(ConsumerRecord<String, byte[]> record) {
         // TODO Auto-generated method stub

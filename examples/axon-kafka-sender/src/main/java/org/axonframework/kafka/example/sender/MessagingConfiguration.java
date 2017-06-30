@@ -1,13 +1,14 @@
 package org.axonframework.kafka.example.sender;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import lombok.ToString;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import javax.annotation.PostConstruct;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -17,9 +18,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.axonframework.config.kafka.KafkaConfigBuilder;
 import org.axonframework.eventhandling.tokenstore.TokenStore;
+import org.axonframework.eventhandling.tokenstore.inmemory.InMemoryTokenStore;
 import org.axonframework.eventhandling.tokenstore.kafka.KafkaTokenStore;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
-import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.kafka.KafkaEventStoreEngine;
 import org.axonframework.messaging.kafka.Sender;
 import org.axonframework.messaging.kafka.message.KafkaMessage;
@@ -28,9 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.PostConstruct;
 
 @Configuration
 @Slf4j
@@ -63,22 +63,24 @@ public class MessagingConfiguration {
     @Bean
     public Properties consumerConfigs() {
         return KafkaConfigBuilder.defaultConsumer().bootstrapServers(bootstrapServers).withKeyDeserializer(StringDeserializer.class)
-                .withValueDeserializer(ByteArrayDeserializer.class).build();
-    }
-    
-    @Bean
-    public EventStorageEngine engine(Serializer serializer) {
-        //return new KafkaEventStoreEngine(serializer, null, null, eventStorageTopic, bootstrapServers);
-        return new InMemoryEventStorageEngine();
+                .withValueDeserializer(ByteArrayDeserializer.class).group(UUID.randomUUID().toString()).build();
     }
 
-//    //@Bean
-//    public TokenStore tokenStore() {
-//        log.info("Configured token store");
-//        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(consumerConfigs());
-//        return new KafkaTokenStore(consumer, eventStorageTopic);
-//    }
-//
+    @Bean
+    public EventStorageEngine engine(Serializer serializer) {
+        log.info("Configuring store engine.");
+        return new KafkaEventStoreEngine(serializer, null, null, eventStorageTopic, bootstrapServers);
+    }
+
+    @Bean
+    public TokenStore tokenStore(EventStorageEngine engine) {
+        if (engine instanceof KafkaEventStoreEngine) {
+            log.info("Configuring Kafka token store.");
+            return new KafkaTokenStore(((KafkaEventStoreEngine) engine).getConsumer(), eventStorageTopic);
+        }
+        return new InMemoryTokenStore();
+    }
+
     @Bean
     public Sender sender() {
         return new Sender() {
@@ -86,7 +88,8 @@ public class MessagingConfiguration {
             public void send(KafkaMessage kafkaMessage) {
                 final KafkaProducer<String, byte[]> producer = new KafkaProducer<>(producerConfigs());
                 try {
-                    final Future<RecordMetadata> future = producer.send(new ProducerRecord<>(eventMessagingTopic, kafkaMessage.getKey(), kafkaMessage.getPayload()));
+                    final Future<RecordMetadata> future = producer
+                            .send(new ProducerRecord<>(eventMessagingTopic, kafkaMessage.getKey(), kafkaMessage.getPayload()));
                     RecordMetadata recordMetadata = future.get(timeout, TimeUnit.MILLISECONDS);
                     log.trace("Message with offset {} sent.", recordMetadata.offset());
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {

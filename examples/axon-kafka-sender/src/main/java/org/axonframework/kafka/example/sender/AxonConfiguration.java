@@ -18,14 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AxonConfiguration {
 
-//    @Bean
-//    public EventStorageEngine engine() {
-//        return new InMemoryEventStorageEngine();
-//    }
+    // @Bean
+    public EventStorageEngine engine() {
+        return new InMemoryEventStorageEngine();
+    }
 
-        
-
-    
     @Autowired
     public void initKafkaPublisher(final EventBus eventBus, final Sender sender, final Serializer serializer) {
         final KafkaMessageConverter converter = new KafkaMessageConverter(serializer);
