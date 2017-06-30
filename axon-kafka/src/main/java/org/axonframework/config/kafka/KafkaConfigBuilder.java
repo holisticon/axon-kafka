@@ -1,4 +1,4 @@
-package org.axonframework.kafka.config;
+package org.axonframework.config.kafka;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,29 +11,49 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-// TODO add all properties as methods
+/**
+ * Fluent configuration builder.
+ * 
+ * @author Simon Zambrovski, Holisticon AG
+ *
+ */
 public class KafkaConfigBuilder {
 
   protected final Properties properties = new Properties();
 
   public static ProducerConfiguration defaultProducer() {
+    return defaultProducer(new Properties());
+  }
+
+  public static ProducerConfiguration defaultProducer(final Properties properties) {
     final ProducerConfiguration builder = new ProducerConfiguration();
     builder.withKeySerializer(StringSerializer.class);
     builder.withValueSerializer(StringSerializer.class);
+
     builder.properties.put("acks", "all");
     builder.properties.put("retries", 0);
     builder.properties.put("batch.size", 16384);
     builder.properties.put("linger.ms", 1);
     builder.properties.put("buffer.memory", 33554432);
+
+    fill(properties, builder.properties);
+    
     return builder;
   }
 
   public static ConsumerConfiguration defaultConsumer() {
+    return defaultConsumer(new Properties());
+  }
+
+  public static ConsumerConfiguration defaultConsumer(final Properties properties) {
     final ConsumerConfiguration builder = new ConsumerConfiguration();
     builder.withKeyDeserializer(StringDeserializer.class);
     builder.withValueDeserializer(StringDeserializer.class);
     builder.properties.put("enable.auto.commit", "true");
     builder.properties.put("auto.commit.interval.ms", "1000");
+
+    fill(properties, builder.properties);
+    
     return builder;
   }
 
@@ -102,4 +122,12 @@ public class KafkaConfigBuilder {
       return this;
     }
   }
+
+  private static void fill(final Properties source, final Properties target) {
+    if (source != null && !source.isEmpty() && target != null) {
+      source.forEach((key, value) -> target.put(key, value));
+    }
+
+  }
+
 }

@@ -1,4 +1,4 @@
-package org.axonframework.kafka.message;
+package org.axonframework.messaging.kafka.message;
 
 import java.util.Map;
 

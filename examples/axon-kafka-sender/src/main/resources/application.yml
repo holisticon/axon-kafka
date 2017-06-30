@@ -1,3 +1,4 @@
 kafka:
-  bootstrap-servers: localhost:9092
-  event-topic: events
+  bootstrap-servers: rlx-v222.ham.dlh.de:9092
+  event-messaging: events
+  event-storage: domain-data

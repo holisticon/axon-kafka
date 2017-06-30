@@ -1,7 +1,7 @@
 package org.axonframework.kafka.example.sender.messaging;
 
-import org.axonframework.kafka.Sender;
-import org.axonframework.kafka.message.KafkaMessage;
+import org.axonframework.messaging.kafka.Sender;
+import org.axonframework.messaging.kafka.message.KafkaMessage;
 
 import lombok.extern.slf4j.Slf4j;
 

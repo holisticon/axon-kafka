@@ -1,7 +1,7 @@
 server:
   port: 8090
 kafka:
-  bootstrap-servers: localhost:9092
+  bootstrap-servers: rlx-v222.ham.dlh.de:9092
   event-topic: events
   group: events
   

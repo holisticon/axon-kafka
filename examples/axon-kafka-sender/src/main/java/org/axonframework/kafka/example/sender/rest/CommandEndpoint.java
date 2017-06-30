@@ -26,24 +26,21 @@ public class CommandEndpoint {
 
     @PostMapping(value = "/notification", consumes = "application/json")
     public ResponseEntity<?> createNotification(@RequestBody final Notification notification) {
-	final CreateNotificationCommand command = new CreateNotificationCommand(UUID.randomUUID().toString(),
-		notification.getTitle(), notification.getMessage());
+        final CreateNotificationCommand command = new CreateNotificationCommand(UUID.randomUUID().toString(), notification.getTitle(),
+                notification.getMessage());
 
-	gateway.send(GenericCommandMessage.<Object> asCommandMessage(command), LoggingCallback.INSTANCE);
+        gateway.send(GenericCommandMessage.<Object> asCommandMessage(command), LoggingCallback.INSTANCE);
 
-	final URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-		.buildAndExpand(command.getId()).toUri();
+        final URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(command.getId()).toUri();
 
-	return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location).build();
     }
 
     @PatchMapping(value = "/notification/{id}")
-    public ResponseEntity<?> markNotification(@PathVariable("id") final String id, @RequestBody final NotificationState state) {
-	final MarkNotificationCommand command = new MarkNotificationCommand(id, state);
-
-	gateway.send(GenericCommandMessage.<Object> asCommandMessage(command), LoggingCallback.INSTANCE);
-
-	return ResponseEntity.noContent().build();
+    public ResponseEntity<?> markNotification(@PathVariable("id") final String id, @RequestBody boolean markAsRead) {
+        final MarkNotificationCommand command = new MarkNotificationCommand(id, markAsRead ? NotificationState.READ : NotificationState.UNREAD);
+        gateway.send(GenericCommandMessage.<Object> asCommandMessage(command), LoggingCallback.INSTANCE);
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.axonframework.kafka.config.KafkaConfigBuilder;
+import org.axonframework.config.kafka.KafkaConfigBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

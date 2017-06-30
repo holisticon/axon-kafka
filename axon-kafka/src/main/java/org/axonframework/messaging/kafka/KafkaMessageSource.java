@@ -1,10 +1,10 @@
-package org.axonframework.kafka;
+package org.axonframework.messaging.kafka;
 
 import java.util.Collections;
 import java.util.Optional;
 
 import org.axonframework.eventhandling.EventMessage;
-import org.axonframework.kafka.message.KafkaMessageConverter;
+import org.axonframework.messaging.kafka.message.KafkaMessageConverter;
 import org.axonframework.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,9 @@ public abstract class KafkaMessageSource {
   private static final Logger log = LoggerFactory.getLogger(KafkaMessageSource.class); 
   
   private KafkaMessageConverter converter;
-  private SubscribableEventSource source;
+  private DefaultSubscribableEventSource source;
 
-  public KafkaMessageSource(Serializer serializer, SubscribableEventSource source) {
+  public KafkaMessageSource(Serializer serializer, DefaultSubscribableEventSource source) {
     this.source = source;
     this.converter = new KafkaMessageConverter(serializer);
   }
