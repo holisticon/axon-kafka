@@ -1,4 +1,4 @@
-# Axon Kafka
+# Axon Kafka Eventstore
 
 ## Goal
 
