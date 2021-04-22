@@ -12,7 +12,7 @@
   <properties>
     <springboot.version>1.5.4.RELEASE</springboot.version>
     <kafka.version>0.10.2.1</kafka.version>
-    <axon.version>3.0.5</axon.version>
+    <axon.version>3.4.3</axon.version>
     <junit.version>4.12</junit.version>
   </properties>
 
